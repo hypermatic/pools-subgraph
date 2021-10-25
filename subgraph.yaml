@@ -1,16 +1,17 @@
-specVersion: 0.0.1
+specVersion: 0.0.2
 schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
     name: PoolFactory
-    network: arbitrum-testnet-v5
+    network: arbitrum-one
     source:
       address: "0x98C58c1cEb01E198F8356763d5CbA8EB7b11e4E2"
       abi: PoolFactory
+      startBlock: 980000
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.2
+      apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
         - DeployPool
@@ -24,3 +25,78 @@ dataSources:
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred
       file: ./src/mapping.ts
+templates:
+  - name: LeveragedPool
+    kind: ethereum/contract
+    network: arbitrum-one 
+    source:
+      abi: LeveragedPool 
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/pool.ts
+      entities:
+        - LeveragedPool
+      abis:
+        - name: LeveragedPool 
+          file: ./abis/LeveragedPool.json
+        - name: QuoteToken
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: PoolInitialized(indexed address,indexed address,address,string)
+          handler: poolInitialized
+        - event: FeeAddressUpdated(indexed address,indexed address)
+          handler: feeAddressUpdated
+        - event: GovernanceAddressChanged(indexed address,indexed address)
+          handler: governanceAddressChanged
+        - event: KeeperAddressChanged(indexed address,indexed address)
+          handler: keeperAddressChanged
+        - event: Paused()
+          handler: handlePaused
+        - event: Unpaused()
+          handler: handleUnpaused
+        - event: PoolRebalance(int256,int256)
+          handler: poolRebalance
+        - event: PriceChangeError(indexed int256,indexed int256)
+          handler: priceChangeError 
+        - event: ProvisionalGovernanceChanged(indexed address)
+          handler: provisionalGovernanceChanged
+  - name: PoolKeeper
+    kind: ethereum/contract
+    network: arbitrum-one 
+    source:
+      abi: PoolKeeper
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/keeper.ts
+      entities:
+        - PoolKeeper
+      abis:
+        - name: PoolKeeper 
+          file: ./abis/PoolKeeper.json
+      eventHandlers:
+        - event: UpkeepSuccessful(indexed address,bytes,indexed int256,indexed int256)
+          handler: upkeepSuccessful 
+        - event: KeeperPaid(indexed address,indexed address,uint256)
+          handler: keeperPaid
+  - name: PoolCommitter 
+    kind: ethereum/contract
+    network: arbitrum-one 
+    source:
+      abi: PoolCommitter
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/committer.ts
+      entities:
+        - PoolCommitter
+      abis:
+        - name: PoolCommitter 
+          file: ./abis/PoolCommitter.json
+      eventHandlers:
+        - event: CreateCommit(indexed uint128,indexed uint256,indexed uint8)
+          handler: createdCommit 

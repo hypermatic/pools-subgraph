@@ -1,6 +1,55 @@
-type ExampleEntity @entity {
+type LeveragedPool @entity {
+  id: ID! # address
+  name: String!
+  keeper: Bytes! # address
+  committer: Bytes! # address
+  quoteToken: Bytes! # address
+  quoteTokenDecimals: BigInt! # address
+  oracle: Bytes! # address
+  feeReceiver: Bytes! # address
+  frontRunningInterval: BigInt!
+  tradingFee: Bytes!
+  updateInterval: BigInt!
+  lastPriceTimestamp: BigInt!
+  paused: Boolean!
+  shortBalance: BigInt!
+  longBalance: BigInt!
+  upkeeps: [UpkeepRound!]! @derivedFrom(field: "pool")
+}
+
+type PoolFactory @entity {
   id: ID!
-  count: BigInt!
-  pool: Bytes! # address
-  ticker: String! # string
+  poolsCount: BigInt! # number of pools deployed
+}
+
+type UpkeepRound @entity {
+  id: ID! # poolAddress-timestamp
+  pool: LeveragedPool! # address
+  timestamp: BigInt!
+  startPrice: BigInt!
+  endPrice: BigInt!
+}
+
+type KeeperPayment @entity {
+  id: ID! # txn hash
+  pool: LeveragedPool! # address
+  rewardedKeeper: Bytes! # address
+  timestamp: BigInt!
+  upkeepRound: UpkeepRound!
+  amount: BigDecimal! # reward payed in settlement tokens
+}
+
+type Commit @entity {
+  id: ID! # trader-committerAddress-commitId
+  trader: Bytes!
+  type: CommitType!
+  amount: BigInt!
+  txnHash: Bytes!
+}
+
+enum CommitType {
+  ShortMint
+  ShortBurn
+  LongMint
+  LongBurn
 }
