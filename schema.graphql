@@ -16,7 +16,7 @@ type LeveragedPool @entity {
   paused: Boolean!
   shortBalance: BigInt!
   longBalance: BigInt!
-  upkeeps: [Upkeep!]! @derivedFrom(field: "pool") # TODO add this
+  # upkeeps: [Upkeep!]! @derivedFrom(field: "pool") # TODO add this
 }
 
 type PoolFactory @entity {
@@ -27,9 +27,9 @@ type PoolFactory @entity {
 type Upkeep @entity {
   id: ID! # poolAddress-timestamp
   pool: LeveragedPool! # address
-  txnHash: Bytes! # TODO add this
+  txnHash: Bytes!
   timestamp: BigInt!
-  blockNumber: BigInt! # TODO add this
+  blockNumber: BigInt!
   startPrice: BigInt!
   endPrice: BigInt!
   longTokenBalance: BigInt!
@@ -44,7 +44,7 @@ type KeeperPayment @entity {
   pool: LeveragedPool! # address
   rewardedKeeper: Bytes! # address
   timestamp: BigInt!
-  upkeepRound: Upkeep! # TODO add this
+  upkeepRound: Upkeep!
   amount: BigDecimal! # reward payed in settlement tokens
 }
 
