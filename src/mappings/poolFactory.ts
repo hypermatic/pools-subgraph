@@ -2,9 +2,9 @@ import { BigInt } from "@graphprotocol/graph-ts"
 import {
   DeployPool,
   OwnershipTransferred,
-} from "../generated/PoolFactory/PoolFactory"
-import { PoolFactory } from "../generated/schema"
-import { LeveragedPool } from "../generated/templates";
+} from "../../generated/PoolFactory/PoolFactory"
+import { PoolFactory } from "../../generated/schema"
+import { LeveragedPool } from "../../generated/templates";
 
 export function handleDeployPool(event: DeployPool): void {
   // Entities can be loaded from the store using a string ID; this ID
