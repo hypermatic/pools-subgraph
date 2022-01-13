@@ -1,10 +1,7 @@
 
-import { Commit, CommitResolver, LeveragedPool, LeveragedPoolByPoolCommitter } from '../../generated/schema';
-import { CreateCommit, ExecuteCommit, ExecuteCommitmentCall, SetQuoteAndPoolCall } from '../../generated/templates/PoolCommitter/PoolCommitter';
-import { LeveragedPool as LeveragedPoolContract } from '../../generated/templates/LeveragedPool/LeveragedPool';
-import { ERC20 } from '../../generated/templates/LeveragedPool/ERC20';
-import { Address, store, log, BigInt } from '@graphprotocol/graph-ts';
-import { PoolCommitter } from '../../generated/templates';
+import { Commit, CommitResolver, LeveragedPoolByPoolCommitter } from '../../generated/schema';
+import { CreateCommit, ExecuteCommit} from '../../generated/templates/PoolCommitter/PoolCommitter';
+import { store } from '@graphprotocol/graph-ts';
 
 let SHORT_MINT = 0;
 let SHORT_BURN = 1;
@@ -45,6 +42,7 @@ export function createdCommit(event: CreateCommit): void {
 	commit.txnHash = event.transaction.hash;
 	commit.created = event.block.timestamp;
 	commit.txnHash = event.transaction.hash;
+	commit.isExecuted = false;
 
 	commit.pool = leveragedPoolByPoolCommitter.pool
 
@@ -61,6 +59,7 @@ export function executedCommit(event: ExecuteCommit): void {
 
 	let upkeepId = commit.pool.toHexString() + '-' + event.block.number.toString();
 	commit.upkeep = upkeepId
+	commit.isExecuted = true
 
 	commit.save();
 	// remove temporary link to pending commit

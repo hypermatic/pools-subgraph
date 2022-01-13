@@ -60,6 +60,7 @@ type Commit @entity {
   type: CommitType!
   amount: BigInt!
   upkeep: Upkeep #upkeep
+  isExecuted: Boolean
 }
 
 type LeveragedPoolByPoolCommitter @entity {
