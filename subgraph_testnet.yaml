@@ -14,16 +14,13 @@ dataSources:
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
-        - DeployPool
-        - OwnershipTransferred
+        - PoolFactory
       abis:
         - name: PoolFactory
           file: ./abis/PoolFactory.json
       eventHandlers:
         - event: DeployPool(indexed address,string)
           handler: handleDeployPool
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
       file: ./src/mappings/poolFactory.ts
 templates:
   - name: LeveragedPool
@@ -46,22 +43,8 @@ templates:
       eventHandlers:
         - event: PoolInitialized(indexed address,indexed address,address,string)
           handler: poolInitialized
-        - event: FeeAddressUpdated(indexed address,indexed address)
-          handler: feeAddressUpdated
-        - event: GovernanceAddressChanged(indexed address,indexed address)
-          handler: governanceAddressChanged
-        - event: KeeperAddressChanged(indexed address,indexed address)
-          handler: keeperAddressChanged
-        - event: Paused()
-          handler: handlePaused
-        - event: Unpaused()
-          handler: handleUnpaused
         - event: PoolRebalance(int256,int256)
           handler: poolRebalance
-        - event: PriceChangeError(indexed int256,indexed int256)
-          handler: priceChangeError
-        - event: ProvisionalGovernanceChanged(indexed address)
-          handler: provisionalGovernanceChanged
   - name: PoolKeeper
     kind: ethereum/contract
     network: arbitrum-rinkeby
@@ -84,8 +67,6 @@ templates:
       eventHandlers:
         - event: UpkeepSuccessful(indexed address,bytes,indexed int256,indexed int256)
           handler: upkeepSuccessful
-        - event: KeeperPaid(indexed address,indexed address,uint256)
-          handler: keeperPaid
   - name: PoolCommitter
     kind: ethereum/contract
     network: arbitrum-rinkeby
@@ -98,7 +79,6 @@ templates:
       file: ./src/mappings/committer.ts
       entities:
         - PoolCommitter
-        - LeveragedPool
       abis:
         - name: PoolCommitter
           file: ./abis/PoolCommitter.json

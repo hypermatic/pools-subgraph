@@ -7,10 +7,13 @@ import {
   PoolRebalance,
   PriceChangeError,
   ProvisionalGovernanceChanged,
-  Unpaused
+  Unpaused,
+  LeveragedPool,
 } from "../../generated/templates/LeveragedPool/LeveragedPool"
-import { LeveragedPool as LeveragedPoolEntity, PoolRebalance as PoolRebalanceEntity } from "../../generated/schema"
+import { ERC20 } from "../../generated/templates/LeveragedPool/ERC20"
+import { LeveragedPool as LeveragedPoolEntity, Upkeep } from "../../generated/schema"
 import { initPool } from "../utils/helper"
+import { Address, log } from "@graphprotocol/graph-ts"
 
 // PoolInitialized(address indexed longToken, address indexed shortToken, address quoteToken, string poolName);
 export function poolInitialized(event: PoolInitialized): void {
@@ -54,14 +57,32 @@ export function handleUnpaused(event: Unpaused): void {
 
 // - PoolRebalance(int256,int256)
 export function poolRebalance(event: PoolRebalance): void {
-  let poolRebalance = new PoolRebalanceEntity(event.address.toHexString() + event.block.number.toString());
+  // this is the first event that is fired during upkeep
+  // this is a good place to cache pricing data for the given upkeep
 
-  poolRebalance.pool = event.address;
-  poolRebalance.blockNumber = event.block.number;
-  poolRebalance.shortBalanceChange = event.params.shortBalanceChange;
-  poolRebalance.longBalanceChange = event.params.longBalanceChange;
 
-  poolRebalance.save();
+  let upkeepId = event.address.toHexString() + '-' + event.block.number.toString()
+
+  let upkeep = new Upkeep(upkeepId);
+
+  let poolInstance = LeveragedPool.bind(event.address);
+	let storedPool = LeveragedPoolEntity.load(event.address.toHexString());
+
+  let longToken = ERC20.bind(Address.fromString(storedPool.longToken.toHexString()));
+	upkeep.longTokenSupply = longToken.totalSupply();
+	upkeep.longTokenBalance = poolInstance.longBalance();
+
+	let shortToken = ERC20.bind(Address.fromString(storedPool.shortToken.toHexString()));
+	upkeep.shortTokenSupply = shortToken.totalSupply();
+	upkeep.shortTokenBalance = poolInstance.shortBalance();
+
+  upkeep.pool = event.address.toHexString();
+  upkeep.blockNumber = event.block.number;
+  upkeep.timestamp = event.block.timestamp;
+  upkeep.shortBalanceChange = event.params.shortBalanceChange;
+  upkeep.longBalanceChange = event.params.longBalanceChange;
+
+  upkeep.save();
 }
 
 // - PriceChangeError(indexed int256,indexed int256)

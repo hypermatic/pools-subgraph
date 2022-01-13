@@ -51,7 +51,7 @@ export function createdCommit(event: CreateCommit): void {
 	commit.save();
 }
 
-// event CreateCommit(uint128 indexed commitID);
+// event ExecuteCommit(uint128 indexed commitID);
 export function executedCommit(event: ExecuteCommit): void {
 	let resolverId = event.address.toHexString() + "-" + event.params.commitID.toString()
 
@@ -59,19 +59,10 @@ export function executedCommit(event: ExecuteCommit): void {
 
 	let commit = Commit.load(commitResolver.commitId);
 
-	let poolInstance = LeveragedPoolContract.bind(Address.fromString(commit.pool.toHexString()));
-	let storedPool = LeveragedPool.load(commit.pool.toHexString());
+	let upkeepId = commit.pool.toHexString() + '-' + event.block.number.toString();
+	commit.upkeep = upkeepId
 
-	let longToken = ERC20.bind(Address.fromString(storedPool.longToken.toHexString()));
-	commit.longSupplyAtExecution = longToken.totalSupply();
-	commit.longBalanceAtExecution = poolInstance.longBalance();
-
-	let shortToken = ERC20.bind(Address.fromString(storedPool.shortToken.toHexString()));
-	commit.shortSupplyAtExecution = shortToken.totalSupply();
-	commit.shortBalanceAtExecution = poolInstance.shortBalance();
-
-	commit.executedAtBlock = event.block.number;
-	commit.executedAtTimestamp = event.block.timestamp;
 	commit.save();
+	// remove temporary link to pending commit
 	store.remove('CommitResolver', resolverId)
 }

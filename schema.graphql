@@ -25,17 +25,20 @@ type PoolFactory @entity {
 }
 
 type Upkeep @entity {
-  id: ID! # poolAddress-timestamp
+  id: ID! # poolAddress-timestamp # TODO: change to poolAddress-blockNumber
   pool: LeveragedPool! # address
-  txnHash: Bytes!
+  txnHash: Bytes
   timestamp: BigInt!
   blockNumber: BigInt!
-  startPrice: BigInt!
-  endPrice: BigInt!
+  startPrice: BigInt
+  endPrice: BigInt
   longTokenBalance: BigInt!
   shortTokenBalance: BigInt!
   longTokenSupply: BigInt!
   shortTokenSupply: BigInt!
+  shortBalanceChange: BigInt!
+  longBalanceChange: BigInt!
+  commits: [Commit!]! @derivedFrom(field: "upkeep")
   # gasPaid: BigInt! # TODO add this
 }
 
@@ -56,25 +59,12 @@ type Commit @entity {
   pool: Bytes! # address
   type: CommitType!
   amount: BigInt!
-  longBalanceAtExecution: BigInt
-  shortBalanceAtExecution: BigInt
-  longSupplyAtExecution: BigInt
-  shortSupplyAtExecution: BigInt
-  executedAtBlock: BigInt
-  executedAtTimestamp: BigInt
+  upkeep: Upkeep #upkeep
 }
 
 type LeveragedPoolByPoolCommitter @entity {
   id: ID! # pool committer address
   pool: Bytes!
-}
-
-type PoolRebalance @entity {
-  id: ID! # poolAddress-blocknumber
-  pool: Bytes! # pool address
-  blockNumber: BigInt!
-  shortBalanceChange: BigInt!
-  longBalanceChange: BigInt!
 }
 
 # this is a bit of a hack to allow updating of commits
