@@ -1,12 +1,16 @@
 import { Address, BigDecimal } from "@graphprotocol/graph-ts";
-import { LeveragedPool } from "../../generated/templates/LeveragedPool/LeveragedPool";
-import { QuoteToken } from "../../generated/templates/LeveragedPool/QuoteToken";
-import { LeveragedPool as LeveragedPoolEntity } from "../../generated/schema"
+import { LeveragedPool,  } from "../../generated/templates/LeveragedPool/LeveragedPool";
+import { ERC20 } from "../../generated/templates/LeveragedPool/ERC20";
+import { LeveragedPool as LeveragedPoolEntity, LeveragedPoolByPoolCommitter } from "../../generated/schema"
 import { BigInt } from "@graphprotocol/graph-ts"
 
 import { PoolCommitter, PoolKeeper } from "../../generated/templates"
 
-export function initPool(address: Address): LeveragedPoolEntity {
+export function initPool(
+	address: Address,
+	longToken: Address | null,
+	shortToken: Address | null
+): LeveragedPoolEntity {
 	let pool = new LeveragedPoolEntity(address.toHex())
 	let contract = LeveragedPool.bind(address)
 
@@ -24,8 +28,20 @@ export function initPool(address: Address): LeveragedPoolEntity {
 	pool.shortBalance = contract.shortBalance()
 	pool.longBalance = contract.longBalance()
 
-	let quoteToken = QuoteToken.bind(contract.quoteToken())
+	if(longToken) {
+		pool.longToken = longToken as Address
+	}
+	if(shortToken) {
+		pool.shortToken = shortToken as Address
+	}
+
+	let quoteToken = ERC20.bind(contract.quoteToken())
 	pool.quoteTokenDecimals = BigInt.fromI32(quoteToken.decimals())
+
+	let leveragedPoolByPoolCommitter = new LeveragedPoolByPoolCommitter(pool.committer.toHexString());
+	leveragedPoolByPoolCommitter.pool = address;
+
+	leveragedPoolByPoolCommitter.save();
 
 	PoolKeeper.create(contract.keeper())
 	PoolCommitter.create(contract.poolCommitter())

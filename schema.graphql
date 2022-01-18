@@ -3,6 +3,8 @@ type LeveragedPool @entity {
   name: String!
   keeper: Bytes! # address
   committer: Bytes! # address
+  longToken: Bytes! # address
+  shortToken: Bytes! # address
   quoteToken: Bytes! # address
   quoteTokenDecimals: BigInt! # address
   oracle: Bytes! # address
@@ -14,7 +16,7 @@ type LeveragedPool @entity {
   paused: Boolean!
   shortBalance: BigInt!
   longBalance: BigInt!
-  upkeeps: [UpkeepRound!]! @derivedFrom(field: "pool")
+  # upkeeps: [Upkeep!]! @derivedFrom(field: "pool") # TODO add this
 }
 
 type PoolFactory @entity {
@@ -22,12 +24,23 @@ type PoolFactory @entity {
   poolsCount: BigInt! # number of pools deployed
 }
 
-type UpkeepRound @entity {
-  id: ID! # poolAddress-timestamp
+type Upkeep @entity {
+  id: ID! # poolAddress-timestamp # TODO: change to poolAddress-blockNumber
   pool: LeveragedPool! # address
+  poolAddress: Bytes! # address
+  txnHash: Bytes
   timestamp: BigInt!
-  startPrice: BigInt!
-  endPrice: BigInt!
+  blockNumber: BigInt!
+  startPrice: BigInt
+  endPrice: BigInt
+  longTokenBalance: BigInt!
+  shortTokenBalance: BigInt!
+  longTokenSupply: BigInt!
+  shortTokenSupply: BigInt!
+  shortBalanceChange: BigInt!
+  longBalanceChange: BigInt!
+  commits: [Commit!]! @derivedFrom(field: "upkeep")
+  # gasPaid: BigInt! # TODO add this
 }
 
 type KeeperPayment @entity {
@@ -35,16 +48,36 @@ type KeeperPayment @entity {
   pool: LeveragedPool! # address
   rewardedKeeper: Bytes! # address
   timestamp: BigInt!
-  upkeepRound: UpkeepRound!
+  upkeepRound: Upkeep!
   amount: BigDecimal! # reward payed in settlement tokens
 }
 
 type Commit @entity {
   id: ID! # trader-committerAddress-commitId
   trader: Bytes!
+  created: BigInt! # timestamp
+  blockNumber: BigInt! # block number
+  txnHash: Bytes!
+  pool: Bytes! # address
   type: CommitType!
   amount: BigInt!
-  txnHash: Bytes!
+  upkeep: Upkeep #upkeep
+  isExecuted: Boolean
+}
+
+type LeveragedPoolByPoolCommitter @entity {
+  id: ID! # pool committer address
+  pool: Bytes!
+}
+
+# this is a bit of a hack to allow updating of commits
+# on executeCommitment call handler
+# this is because commits are deleted after they are executed
+# so we use this as a way to store pending commit details
+# and be able to look them up during executeCommitment handler
+type CommitResolver @entity {
+  id: ID! #committerAddress-commitId
+  commitId: String! # trader-committerAddress-commitId
 }
 
 enum CommitType {
