@@ -10,6 +10,7 @@ import {
   Unpaused,
   LeveragedPool,
 } from "../../generated/templates/LeveragedPool/LeveragedPool"
+import { PoolCommitter } from "../../generated/templates/LeveragedPool/PoolCommitter"
 import { ERC20 } from "../../generated/templates/LeveragedPool/ERC20"
 import { LeveragedPool as LeveragedPoolEntity, Upkeep } from "../../generated/schema"
 import { initPool } from "../utils/helper"
@@ -77,6 +78,7 @@ export function poolRebalance(event: PoolRebalance): void {
 	upkeep.shortTokenBalance = poolInstance.shortBalance();
 
   upkeep.pool = event.address.toHexString();
+  upkeep.poolAddress = event.address;
   upkeep.blockNumber = event.block.number;
   upkeep.timestamp = event.block.timestamp;
   upkeep.shortBalanceChange = event.params.shortBalanceChange;

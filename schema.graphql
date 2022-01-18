@@ -27,6 +27,7 @@ type PoolFactory @entity {
 type Upkeep @entity {
   id: ID! # poolAddress-timestamp # TODO: change to poolAddress-blockNumber
   pool: LeveragedPool! # address
+  poolAddress: Bytes! # address
   txnHash: Bytes
   timestamp: BigInt!
   blockNumber: BigInt!
@@ -55,6 +56,7 @@ type Commit @entity {
   id: ID! # trader-committerAddress-commitId
   trader: Bytes!
   created: BigInt! # timestamp
+  blockNumber: BigInt! # block number
   txnHash: Bytes!
   pool: Bytes! # address
   type: CommitType!

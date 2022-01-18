@@ -41,6 +41,7 @@ export function createdCommit(event: CreateCommit): void {
 	commit.trader = event.transaction.from;
 	commit.txnHash = event.transaction.hash;
 	commit.created = event.block.timestamp;
+	commit.blockNumber = event.block.number;
 	commit.txnHash = event.transaction.hash;
 	commit.isExecuted = false;
 
